@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title></title>
+
+  <style>
+    body {
+      background: #eaeaea;
+    }
+
+    #canvas {
+      background: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas" width="300" height="300"></canvas>
+  <script type="text/javascript">
+    var canvas = document.getElementById(('canvas')),
+      context = canvas.getContext('2d'),
+      POINT_RADIUS = 7,
+      points = [{
+        x: 67,
+        y: 41
+      }, {
+        x: 99,
+        y: 53
+      }, {
+        x: 250,
+        y: 150
+      }, {
+        x: 227,
+        y: 170
+      }, {
+        x: 69,
+        y: 255
+      }, {
+        x: 63,
+        y: 230
+      }];
+
+    function drawPoint(x, y, strokeStyle, fillStyle) {
+      context.beginPath();
+      context.fillStyle = fillStyle;
+      context.strokeStyle = strokeStyle;
+      context.lineWidth = 0.5;
+      context.arc(x, y, POINT_RADIUS, 0, Math.PI * 2, false);
+      context.fill();
+      context.stroke();
+    }
+
+    function drawBezierPoints() {
+      var i,
+        strokeStyle,
+        fillStyle;
+
+      for (var i = 0; i < points.length; i++) {
+        fillStyle = i % 2 === 0 ? 'white' : 'blue';
+        strokeStyle = i % 2 === 0 ? 'blue' : 'white';
+        drawPoint(points[i].x, points[i].y, strokeStyle, fillStyle);
+      }
+    }
+
+    function drawArrow() {
+      context.strokeStyle = 'white';
+      context.fillStyle = 'cornflowerblue';
+
+      context.moveTo(points[1].x, points[1].y);
+      context.lineTo(227, 130);
+
+      context.quadraticCurveTo(points[2].x, points[2].y,
+        points[3].x, points[3].y);
+
+      context.lineTo(95, 249);
+      context.quadraticCurveTo(points[4].x, points[4].y,
+        points[5].x, points[5].y);
+
+      context.lineTo(63, 70);
+      context.quadraticCurveTo(points[0].x, points[0].y,
+        points[1].x, points[1].y);
+
+      context.fill();
+      // context.stroke();
+    }
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawArrow();
+    // drawBezierPoints();
+  </script>
+  <canvas id="canvas2" width="300" height="300"></canvas>
+  <script type="text/javascript">
+    var canvas = document.getElementById(('canvas')),
+      context = canvas.getContext('2d'),
+      POINT_RADIUS = 7,
+      points = [{
+        x: 67,
+        y: 41
+      }, {
+        x: 99,
+        y: 53
+      }, {
+        x: 250,
+        y: 150
+      }, {
+        x: 227,
+        y: 170
+      }, {
+        x: 69,
+        y: 255
+      }, {
+        x: 63,
+        y: 230
+      }];
+    
+  </script>
+
+  <script type="text/javascript" src="http://localhost:35729/livereload.js"></script>
+</body>
+
+</html>

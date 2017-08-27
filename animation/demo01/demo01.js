@@ -73,7 +73,7 @@ function drawBackground() {
   context.stroke();
 }
 
-function update() {
+function update(time) {
   var disc = null;
 
   // 速度方向转换
@@ -125,15 +125,31 @@ function calculateFps() {
   return fps;
 }
 
+var lastFpsUpdateTime = 0,
+    lastFpsUpdate = 0;
 function animate(time) {
+  var fps = 0,
+      now = +new Date;
+
+  if (!time)
+    time = +new Date;
+
   if (!paused) {
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
-    update();
+    update(time);
     draw();
 
+    fps = calculateFps();
+
+    // 限制每1秒才更新帧数显示
+    if (now - lastFpsUpdateTime > 1000) {
+      lastFpsUpdateTime = now;
+      lastFpsUpdate = fps;
+    }
+
     context.fillStyle = 'cornflowerblue';
-    context.fillText(calculateFps().toFixed() + 'fps', 20, 60);
+    context.fillText(lastFpsUpdate.toFixed() + 'fps', 20, 60);
 
     window.requestAnimationFrame(animate);
   }

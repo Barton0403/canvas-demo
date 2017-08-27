@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>离屏canvas背景块复制</title>
+  <style>
+    body {
+      background: #dddddd;
+    }
+
+    #canvas {
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 6px rgba(0, 0, 0, .5);
+    }
+
+    #offscreen-canvas {
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 6px rgba(0, 0, 0, .5);
+    }
+
+    #control {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="control">
+    <input type="button" id="animateButton" value="Animate">
+  </div>
+
+  <canvas id="canvas" width="750" height="500"></canvas>
+  <canvas id="offscreen-canvas" width="750" height="500"></canvas>
+
+  <script type="text/javascript" src="./index.js"></script>
+</body>
+</html>

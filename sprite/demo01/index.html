@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>背景的滚动</title>
+  <style>
+    body {
+      background: #dddddd;
+      font-size: 12px;
+    }
+
+    input {
+      vertical-align: middle;
+    }
+
+    .canvas {
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 6px rgba(0, 0, 0, .5);
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="control">
+    <input type="button" id="animateButton" value="Start">
+    <input type="checkbox" id="chk_mouseLocation"> 鼠标坐标
+  </div>
+
+  <canvas id="canvas" class="canvas" width="500" height="360"></canvas>
+
+  <script type="text/javascript" src="../../plugin/common.js"></script>
+  <script type="text/javascript" src="./index.js"></script>
+</body>
+</html>

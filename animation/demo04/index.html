@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>基于时间的运动</title>
+  <style>
+    body {
+      background: #dddddd;
+    }
+
+    .canvas {
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 6px rgba(0, 0, 0, .5);
+    }
+
+    .control {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!--
+      根据帧数和时间计算每帧实际运动像素
+      像素/帧 = (像素/秒) * (秒/帧)
+      帧速 = 秒速 * 秒帧
+   -->
+
+  <div class="control">
+    <input type="button" id="animateButton" value="Animate">
+  </div>
+
+  <canvas id="canvas" class="canvas" width="750" height="500"></canvas>
+
+  <script type="text/javascript" src="./index.js"></script>
+</body>
+</html>
