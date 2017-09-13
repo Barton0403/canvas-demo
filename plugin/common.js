@@ -170,7 +170,7 @@ Sprite.prototype = {
 // 图像绘制器
 var ImagePainter = function(imgUrl) {
   this.image = new Image();
-  this.image.src = imageUrl;
+  this.image.src = imgUrl;
 };
 
 ImagePainter.prototype = {
@@ -178,13 +178,13 @@ ImagePainter.prototype = {
 
   paint: function(sprite, ctx) {
     if (!this.image.complete) {
-      this.image.onload = function(e) {
-        sprite.width = this.width;
-        sprite.height = this.height;
-
-        context.drawImage(this, // this is image
-            sprite.left, sprite.top, sprite.width, sprite.height);
-      };
+      // this.image.onload = function(e) {
+      //   sprite.width = this.width;
+      //   sprite.height = this.height;
+      //
+      //   context.drawImage(this, // this is image
+      //       sprite.left, sprite.top, sprite.width, sprite.height);
+      // };
     } else {
       ctx.drawImage(this.image, sprite.left, sprite.top, sprite.width, sprite.height);
     }
@@ -217,3 +217,185 @@ SpriteSheetPainter.prototype = {
     }
   }
 };
+
+// 精灵动画
+var SpriteAnimator = function (painters, elapsedCallback) {
+  this.painters = painters || [];
+  this.elapsedCallback = elapsedCallback;
+};
+
+SpriteAnimator.prototype = {
+  startTime: 0,
+  painters: [],
+  elapsedCallback: null,
+  duration: 1000,
+  index: 0,
+
+  end: function (sprite, originalPainter) {
+    sprite.animating = false;
+    if (this.elapsedCallback) this.elapsedCallback(sprite);
+    else sprite.painter = originalPainter;
+  },
+
+  start: function (sprite, duration) {
+    this.startTime = +new Date();
+
+    var endTime = this.startTime + duration,
+      period = duration / this.painters.length,
+      animator = this,
+      originalPainter = sprite.painter,
+      lastUpdateTime = null;
+
+    this.index = 0;
+    sprite.animating = true;
+    sprite.painter = this.painters[this.index];
+
+    requestNextAnimationFrame(function spriteAnimatorAnimate (time) {
+      if (!lastUpdateTime) lastUpdateTime = time;
+
+      if (+new Date < endTime) {
+        if (time - lastUpdateTime > period) {
+          sprite.painter = animator.painters[++animator.index];
+          lastUpdateTime = time;
+        }
+
+        requestNextAnimationFrame(spriteAnimatorAnimate);
+      } else {
+        animator.end(sprite, originalPainter);
+      }
+    });
+  }
+};
+
+// timer工具
+var Stopwatch = function() {};
+Stopwatch.prototype = {
+  startTime: 0,
+  running: false,
+  elapsedTime: null,
+
+  start: function () {
+    this.startTime = +new Date();
+    this.running = true;
+    this.elapsedTime = null;
+  },
+
+  stop: function () {
+    this.elapsedTime = (+new Date()) - this.startTime;
+    this.running = false;
+  },
+
+  getElapsedTime: function () {
+    if (this.isRunning)
+      return (+new Date()) - this.startTime;
+
+    return this.elapsedTime;
+  },
+
+  isRunning: function () {
+    return this.running;
+  },
+
+  reset: function() {
+    this.elapsedTime = 0;
+  }
+};
+
+var AnimationTimer = function (duration) {
+  this.duration = duration;
+  this.stopwatch = new Stopwatch();
+};
+AnimationTimer.prototype = {
+  duration: null,
+  stopwatch: null,
+
+  start: function () {
+    this.stopwatch.start();
+  },
+
+  stop: function () {
+    this.stopwatch.stop();
+  },
+
+  getElapsedTime: function () {
+    if (!this.stopwatch.running)
+      return null;
+    else
+      return this.stopwatch.getElapsedTime();
+  },
+
+  isRunning: function () {
+    return this.stopwatch.isRunning();
+  },
+
+  isOver: function () {
+    return this.stopwatch.getElapsedTime() < this.duration;
+  }
+};
+
+// #region 多边形绘制
+var Point = function (x, y) {
+   this.x = x;
+   this.y = y;
+};
+
+var Polygon = function (centerX, centerY, radius, sides, startAngle, strokeStyle, fillStyle, filled) {
+   this.x = centerX;
+   this.y = centerY;
+   this.radius = radius;
+   this.sides = sides;
+   this.startAngle = startAngle;
+   this.strokeStyle = strokeStyle;
+   this.fillStyle = fillStyle;
+   this.filled = filled;
+};
+
+Polygon.prototype = {
+   getPoints: function () {
+      var points = [],
+          angle = this.startAngle || 0;
+
+      for (var i=0; i < this.sides; ++i) {
+         points.push(new Point(this.x + this.radius * Math.sin(angle),
+                           this.y - this.radius * Math.cos(angle)));
+         angle += 2*Math.PI/this.sides;
+      }
+      return points;
+   },
+
+   createPath: function (context) {
+      var points = this.getPoints();
+
+      context.beginPath();
+
+      context.moveTo(points[0].x, points[0].y);
+
+      for (var i=1; i < this.sides; ++i) {
+         context.lineTo(points[i].x, points[i].y);
+      }
+
+      context.closePath();
+   },
+
+   stroke: function (context) {
+      context.save();
+      this.createPath(context);
+      context.strokeStyle = this.strokeStyle;
+      context.stroke();
+      context.restore();
+   },
+
+   fill: function (context) {
+      context.save();
+      this.createPath(context);
+      context.fillStyle = this.fillStyle;
+      context.fill();
+      context.restore();
+   },
+
+   move: function (x, y) {
+      this.x = x;
+      this.y = y;
+   },
+};
+// #endregion
