@@ -112,7 +112,7 @@ function windowToCanvas(cvs, x, y) {
  * @return {[type]} [description]
  */
 function erase(cxt) {
-  cxt.clearRect(0, 0, canvas.width, canvas.height);
+  cxt.clearRect(0, 0, cxt.canvas.width, cxt.canvas.height);
 }
 
 /**

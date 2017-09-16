@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>小球投掷</title>
+  <style>
+    body {
+      background: #dddddd;
+      font-size: 12px;
+    }
+
+    input {
+      vertical-align: middle;
+    }
+
+    .canvas {
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 6px rgba(0, 0, 0, .5);
+    }
+
+    .control {
+      margin-bottom: 20px;
+      position: absolute;
+      top: 50px;
+      left: 150px;
+      background: rgba(68, 48, 36, 0.5);
+      width: 200px;
+      height: 50px;
+      padding: 10px;
+      color: #fff;
+    }
+
+    #scoreboard {
+      position: absolute;
+      left: 110px;
+      top: 50px;
+      color: #fff;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="canvas" class="canvas" width="800" height="450"></canvas>
+
+  <div id="scoreboard">0</div>
+  <div class="control">
+    初始速度：<output id="launchVelocityOutput"></output> m/s <br>
+    初始角度：<output id="launchAngleOutput"></output> degree <br>
+  </div>
+
+  <script type="text/javascript" src="../../plugin/common.js"></script>
+  <script type="text/javascript" src="./index.js"></script>
+
+  <script type="text/javascript" src="http://localhost:35729/livereload.js">
+
+  </script>
+</body>
+</html>
