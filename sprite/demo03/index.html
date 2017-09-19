@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>时间扭曲</title>
+  <title>精灵表</title>
   <style>
     body {
       background: #dddddd;
@@ -29,22 +29,13 @@
 <body>
 
   <div class="control">
-    <button id="btn_animation">start</button>
-    <input type="radio" name="ani" value="linear" id="ani_linear" checked> Linear
-    <input type="radio" name="ani" value="easein" id="ani_ease-in"> Ease in
-    <input type="radio" name="ani" value="easeout" id="ani_ease-out"> Ease Out
-    <input type="radio" name="ani" value="easeinout" id="ani_ease-in-out"> Ease In/Out
-    <input type="radio" name="ani" value="Elastic" id="ani_elastic"> Elastic
-    <input type="radio" name="ani" value="Bounce" id="ani_bounce"> Bounce
+    <input type="button" id="animateButton" value="Start">
+    <input type="checkbox" id="chk_mouseLocation"> 鼠标坐标
   </div>
 
-  <canvas id="canvas" class="canvas" width="650" height="300"></canvas>
+  <canvas id="canvas" class="canvas" width="462" height="360"></canvas>
 
   <script type="text/javascript" src="../../plugin/common.js"></script>
   <script type="text/javascript" src="./index.js"></script>
-
-  <script type="text/javascript" src="http://localhost:35729/livereload.js">
-
-  </script>
 </body>
 </html>
