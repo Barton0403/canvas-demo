@@ -1,4 +1,8 @@
-//识别手机浏览器
+// #region 公共方法
+/**
+ * 识别手机浏览器
+ * @return {[type]} [description]
+ */
 function checkIsMobile() {
   var ua = navigator.userAgent.toLowerCase();
   var contains = function(a, b) {
@@ -17,7 +21,50 @@ function checkIsMobile() {
   return false;
 };
 
-// requestAnimationFrame 各浏览器兼容性
+/**
+ * 获取点击位置信息
+ * @param  {[type]} cvs [description]
+ * @param  {[type]} x   [description]
+ * @param  {[type]} y   [description]
+ * @return {[type]}     [description]
+ */
+function windowToCanvas(cvs, x, y) {
+  var bbox = cvs.getBoundingClientRect();
+
+  return {
+    x: x - bbox.left * (cvs.width / bbox.width),
+    y: y - bbox.top * (cvs.height / bbox.height)
+  }
+}
+
+/**
+ * 清除界面
+ * @return {[type]} [description]
+ */
+function erase(cxt) {
+  cxt.clearRect(0, 0, cxt.canvas.width, cxt.canvas.height);
+}
+
+/**
+ * 秒帧计算
+ * @param  {[type]} time [description]
+ * @return {[type]}      [description]
+ */
+var lastCalculateTime;
+function calculateFps(time) {
+  // 初始化
+  if (!lastCalculateTime) {
+    lastCalculateTime = time;
+  }
+
+  var fps = 1000 / (time - lastCalculateTime);
+  lastCalculateTime = time;
+
+  return fps;
+}
+// #endregion
+
+// #region requestAnimationFrame 各浏览器兼容性
 window.requestNextAnimationFrame = (function() {
   var originalWebkitRequestAnimationFrame = undefined,
     wrapper = undefined,
@@ -90,50 +137,9 @@ window.requestNextAnimationFrame = (function() {
     }, self.timeout);
   };
 })();
+// #endregion
 
-/**
- * 获取点击位置信息
- * @param  {[type]} cvs [description]
- * @param  {[type]} x   [description]
- * @param  {[type]} y   [description]
- * @return {[type]}     [description]
- */
-function windowToCanvas(cvs, x, y) {
-  var bbox = cvs.getBoundingClientRect();
-
-  return {
-    x: x - bbox.left * (cvs.width / bbox.width),
-    y: y - bbox.top * (cvs.height / bbox.height)
-  }
-}
-
-/**
- * 清除界面
- * @return {[type]} [description]
- */
-function erase(cxt) {
-  cxt.clearRect(0, 0, cxt.canvas.width, cxt.canvas.height);
-}
-
-/**
- * 秒帧计算
- * @param  {[type]} time [description]
- * @return {[type]}      [description]
- */
-var lastCalculateTime;
-function calculateFps(time) {
-  // 初始化
-  if (!lastCalculateTime) {
-    lastCalculateTime = time;
-  }
-
-  var fps = 1000 / (time - lastCalculateTime);
-  lastCalculateTime = time;
-
-  return fps;
-}
-
-// 精灵对象
+// #region 精灵
 var Sprite = function(name, painter, behaviors) {
   this.name = name;
   this.painter = painter;
@@ -266,8 +272,9 @@ SpriteAnimator.prototype = {
     });
   }
 };
+// #endregion
 
-// timer工具
+// #region timer工具
 var Stopwatch = function() {};
 Stopwatch.prototype = {
   startTime: 0,
@@ -381,6 +388,151 @@ AnimationTimer.makeLinear = function () {
       return percentComplete;
    };
 };
+// #endregion
+
+// #region 向量
+var Vector = function (x, y) {
+  this.x = x;
+  this.y = y;
+};
+Vector.prototype = {
+  getMagnitude: function () {
+    return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
+  },
+
+  add: function (vector) {
+    var v = new Vector();
+    v.x = this.x + vector.x;
+    v.y = this.y + vector.y;
+    return v;
+  },
+
+  subtract: function (vector) {
+    var v = new Vector();
+    v.x = this.x - vector.x;
+    v.y = this.y - vector.y;
+    return v;
+  },
+
+  dotProduct: function (vector) {
+    return this.x * vector.x + this.y * vector.y;
+  },
+
+  edge: function (vector) {
+    return this.subtract(vector);
+  },
+
+  perpendicular: function (vector) {
+    var v = new Vector();
+    v.x = this.y;
+    v.y = 0 - this.x;
+    return v;
+  },
+
+  normalize: function () {
+    var v = new Vector(),
+        m = this.getMagnitude();
+
+    if (m != 0) {
+      v.x = this.x / m;
+      v.y = this.y / m;
+    }
+
+    return v;
+  },
+
+  normal: function () {
+    var p = this.perpendicular();
+    return p.normalize();
+  }
+};
+// #endregion
+
+// #region 投影
+var Projection = function (min, max) {
+  this.min = min;
+  this.max = max;
+}
+Projection.prototype = {
+  overlaps: function (projection) {
+    return this.max > projection.min && this.min < projection.max;
+  }
+};
+// #endregion
+
+// #region 形状
+var Shape = function () {
+  this.x = null;
+  this.y = null;
+  this.strokeStyle = '#000';
+  this,fillStyle = '#fff';
+};
+
+Shape.prototype = {
+  collidesWith: function (shape) {
+    // 获取所有投影轴
+    var axes = this.getAxes().concat(shape.getAxes());
+    return !this.separationOnAxes(axes, shape);
+  },
+
+  separationOnAxes: function (axes, shape) {
+    var p1, p2, axis;
+
+    for (var i = 0; i < axes.length; i++) {
+      axis = axes[i];
+
+      // 获取投影
+      p1 = shape.project(axis);
+      p2 = this.project(axis);
+
+      // 判断是否分离
+      if (!p1.overlaps(p2)) return true;
+    }
+
+    return false;
+  },
+
+  project: function (axis) {
+    throw 'project(axis) not implemented';
+  },
+
+  getAxes: function () {
+    throw 'getAxes() not implemented';
+  },
+
+  move: function (dx, dy) {
+    throw 'move(dx, dy) not implemented';
+  },
+
+  // Drawing methods
+
+  createPath: function (cxt) {
+    throw 'createPath(cxt) not implemented';
+  },
+
+  stroke: function (cxt) {
+     cxt.save();
+     this.createPath(cxt);
+     cxt.strokeStyle = this.strokeStyle;
+     cxt.stroke();
+     cxt.restore();
+  },
+
+  fill: function (cxt) {
+     cxt.save();
+     this.createPath(cxt);
+     cxt.fillStyle = this.fillStyle;
+     cxt.fill();
+     cxt.restore();
+  },
+
+  isPointInPath: function (cxt, x, y) {
+    this.createPath(cxt);
+    return cxt.isPointInPath(x, y);
+  }
+};
+// #endregion
+
 // #region 多边形绘制
 var Point = function (x, y) {
    this.x = x;
@@ -392,58 +544,96 @@ var Polygon = function (centerX, centerY, radius, sides, startAngle, strokeStyle
    this.y = centerY;
    this.radius = radius;
    this.sides = sides;
-   this.startAngle = startAngle;
-   this.strokeStyle = strokeStyle;
-   this.fillStyle = fillStyle;
+   this.startAngle = startAngle || 0;
+   this.strokeStyle = strokeStyle || '#000';
+   this.fillStyle = fillStyle || '#fff';
    this.filled = filled;
+   this.points = centerX ? this.getPoints() : [];
 };
 
-Polygon.prototype = {
-   getPoints: function () {
-      var points = [],
-          angle = this.startAngle || 0;
+Polygon.prototype = new Shape();
 
-      for (var i=0; i < this.sides; ++i) {
-         points.push(new Point(this.x + this.radius * Math.sin(angle),
-                           this.y - this.radius * Math.cos(angle)));
-         angle += 2*Math.PI/this.sides;
-      }
-      return points;
-   },
+Polygon.prototype.setPoints = function (points) {
+  this.points = points;
 
-   createPath: function (context) {
-      var points = this.getPoints();
+  return this;
+};
 
-      context.beginPath();
+Polygon.prototype.getPoints = function () {
+   var points = [],
+       angle = this.startAngle || 0;
 
-      context.moveTo(points[0].x, points[0].y);
+   for (var i=0; i < this.sides; ++i) {
+      points.push(new Point(this.x + this.radius * Math.sin(angle),
+                        this.y - this.radius * Math.cos(angle)));
+      angle += 2*Math.PI/this.sides;
+   }
 
-      for (var i=1; i < this.sides; ++i) {
-         context.lineTo(points[i].x, points[i].y);
-      }
+   return points;
+};
 
-      context.closePath();
-   },
+Polygon.prototype.createPath = function (ctx) {
+   var points = this.points;
 
-   stroke: function (context) {
-      context.save();
-      this.createPath(context);
-      context.strokeStyle = this.strokeStyle;
-      context.stroke();
-      context.restore();
-   },
+   ctx.beginPath();
 
-   fill: function (context) {
-      context.save();
-      this.createPath(context);
-      context.fillStyle = this.fillStyle;
-      context.fill();
-      context.restore();
-   },
+   ctx.moveTo(points[0].x, points[0].y);
 
-   move: function (x, y) {
-      this.x = x;
-      this.y = y;
-   },
+   for (var i=1; i < this.points.length; ++i) {
+      ctx.lineTo(points[i].x, points[i].y);
+   }
+
+   ctx.closePath();
+};
+
+Polygon.prototype.move = function (dx, dy) {
+  for (var i = 0, point; i < this.points.length; i++) {
+    point = this.points[i];
+
+    point.x += dx;
+    point.y += dy;
+  }
+};
+
+// 投影方法
+
+Polygon.prototype.getAxes = function () {
+  var v1 = new Vector(),
+      v2 = new Vector(),
+      axes = [];
+
+  for (var i = 0; i < this.points.length - 1; i++) {
+    v1.x = this.points[i].x;
+    v1.y = this.points[i].y;
+
+    v2.x = this.points[i+1].x;
+    v2.y = this.points[i+1].y;
+
+    axes.push(v1.edge(v2).normal());
+  }
+
+  v1.x = this.points[this.points.length - 1].x;
+  v1.y = this.points[this.points.length - 1].y;
+
+  v2.x = this.points[0].x;
+  v2.y = this.points[0].y;
+
+  axes.push(v1.edge(v2).normal());
+
+  return axes;
+};
+
+Polygon.prototype.project = function (axis) {
+  var scalars = [],
+      v = new Vector();
+
+  for (var i = 0; i < this.points.length; i++) {
+    v.x = this.points[i].x;
+    v.y = this.points[i].y;
+    scalars.push(v.dotProduct(axis));
+  }
+
+  return new Projection(Math.min.apply(Math, scalars),
+                        Math.max.apply(Math, scalars));
 };
 // #endregion
