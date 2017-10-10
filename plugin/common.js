@@ -392,8 +392,26 @@ AnimationTimer.makeLinear = function () {
 
 // #region 向量
 var Vector = function (x, y) {
+  if (arguments.length == 0) {
+    this.x = 0;
+    this.y = 0;
+
+    return this;
+  }
+
+  // point
+  if (arguments.length < 2) {
+    var point = arguments[0];
+    this.x = point.x;
+    this.y = point.y;
+
+    return this;
+  }
+
   this.x = x;
   this.y = y;
+
+  return this;
 };
 Vector.prototype = {
   getMagnitude: function () {
@@ -531,6 +549,91 @@ Shape.prototype = {
     return cxt.isPointInPath(x, y);
   }
 };
+
+var Circle = function (x, y, radius, strokeStyle, fillStyle) {
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+  strokeStyle ? this.strokeStyle = strokeStyle : this.strokeStyle = '#000';
+  fillStyle ? this.fillStyle = fillStyle : this.fillStyle = '#fff';
+};
+
+Circle.prototype = new Shape();
+
+Circle.prototype.collidesWith = function (shape) {
+  var point, length, min = 10000, v1, v2,
+      edge, perpendicular, normal,
+      axes = shape.getAxes(), distance;
+
+  if (!axes) {
+    distance = Math.sqrt(Math.pow(shape.x - this.x, 2) +
+                         Math.pow(shape.y - this.y, 2));
+
+    return distance < Math.abs(this.radius + shape.radius);
+  } else {
+    return polygonCollidesWithCircle(shape, this);
+  }
+};
+
+Circle.prototype.getAxes = function () {
+  return null; // 圆不存在边
+};
+
+Circle.prototype.move = function (dx, dy) {
+  this.x += dx;
+  this.y += dy;
+};
+
+Circle.prototype.project = function (axis) {
+  var scalars = [],
+      point = new Point(this.x, this.y),
+      dotProduct = new Vector(point).dotProduct(axis);
+
+  scalars.push(dotProduct);
+  scalars.push(dotProduct + this.radius);
+  scalars.push(dotProduct - this.radius);
+
+  return new Projection(Math.min.apply(Math, scalars),
+                        Math.max.apply(Math, scalars));
+};
+
+Circle.prototype.createPath = function (ctx) {
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
+  ctx.closePath();
+};
+
+function getPolygonPointClosestToCircle(polygon, circle) {
+  var min = 10000,
+      length,
+      testPoint,
+      closestPoint;
+
+  for (var i = 0; i < polygon.points.length; ++i) {
+    testPoint = polygon.points[i];
+    length = Math.sqrt(Math.pow(testPoint.x - circle.x, 2),
+                       Math.pow(testPoint.y - circle.y, 2));
+
+    if (length < min) {
+      min = length;
+      closestPoint = testPoint;
+    }
+  }
+
+  return closestPoint;
+}
+
+function polygonCollidesWithCircle(polygon, circle) {
+  var closestPoint = getPolygonPointClosestToCircle(polygon, circle),
+      axes = polygon.getAxes(), v1, v2;
+
+  v1 = new Vector(circle.x, circle.y);
+  v2 = new Vector(closestPoint.x, closestPoint.y);
+
+  axes.push(v1.subtract(v2).normalize());
+
+  return !polygon.separationOnAxes(axes, circle);
+}
 // #endregion
 
 // #region 多边形绘制
@@ -552,6 +655,18 @@ var Polygon = function (centerX, centerY, radius, sides, startAngle, strokeStyle
 };
 
 Polygon.prototype = new Shape();
+
+// 兼容和圆形碰撞
+Polygon.prototype.collidesWith = function (shape) {
+  var axes = shape.getAxes();
+
+  if (!axes) {
+    return polygonCollidesWithCircle(this, shape);
+  } else {
+    axes.concat(this.getAxes());
+    return !this.separationOnAxes(axes, shape);
+  }
+};
 
 Polygon.prototype.setPoints = function (points) {
   this.points = points;

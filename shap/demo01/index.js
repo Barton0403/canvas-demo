@@ -11,7 +11,7 @@ var canvas = document.getElementById('canvas'),
     y: 0
   },
   shapeBeginDragged = null,
-  polygons = [
+  myPolygons = [
     new Polygon(80, 50, 30, 3),
     new Polygon(110, 150, 60, 4, Math.PI / 4),
     new Polygon().setPoints([
@@ -19,15 +19,17 @@ var canvas = document.getElementById('canvas'),
       new Point(380, 150),
       new Point(500, 150),
       new Point(520, 100)
-    ])
+    ]),
+    new Circle(150, 75, 20),
+    new Circle(350, 25, 30)
   ];
 
 // 检查碰撞
 function detectCollisions () {
   var shape;
 
-  for (var i = 0; i < polygons.length; i++) {
-    shape = polygons[i];
+  for (var i = 0; i < myPolygons.length; i++) {
+    shape = myPolygons[i];
 
     if (shape !== shapeBeginDragged) {
       if (shapeBeginDragged.collidesWith(shape)) {
@@ -50,18 +52,18 @@ function update(time) {
 }
 
 function draw() {
-  drawPolygons();
+  drawmyPolygons();
 }
 
-function drawPolygons() {
+function drawmyPolygons() {
   context.save();
 
-  for (var i = 0; i < polygons.length; i++) {
-    var polygon = polygons[i];
+  for (var i = 0; i < myPolygons.length; i++) {
+    var p = myPolygons[i];
 
-    polygon.createPath(context);
-    polygon.stroke(context);
-    polygon.fill(context);
+    p.createPath(context);
+    p.stroke(context);
+    p.fill(context);
   }
 
   context.restore();
@@ -79,11 +81,11 @@ function main(time) {
 canvas.onmousedown = function(e) {
   mouse = windowToCanvas(canvas, e.clientX, e.clientY);
 
-  for (var i = 0; i < polygons.length; i++) {
-    var polygon = polygons[i];
+  for (var i = 0; i < myPolygons.length; i++) {
+    var p = myPolygons[i];
 
-    if (polygon.isPointInPath(context, mouse.x, mouse.y)) {
-      shapeBeginDragged = polygon;
+    if (p.isPointInPath(context, mouse.x, mouse.y)) {
+      shapeBeginDragged = p;
       lastdrag.x = mouse.x;
       lastdrag.y = mouse.y;
     }
