@@ -163,7 +163,7 @@ Sprite.prototype = {
 
   paint: function(ctx) {
     if (this.painter && this.visible)
-      this.painter.paint(this, context);
+      this.painter.paint(this, ctx);
     }
   ,
   update: function(ctx, time) {
@@ -180,17 +180,15 @@ var ImagePainter = function(imgUrl) {
 };
 
 ImagePainter.prototype = {
-  image: null,
-
   paint: function(sprite, ctx) {
     if (!this.image.complete) {
-      // this.image.onload = function(e) {
-      //   sprite.width = this.width;
-      //   sprite.height = this.height;
-      //
-      //   context.drawImage(this, // this is image
-      //       sprite.left, sprite.top, sprite.width, sprite.height);
-      // };
+      this.image.onload = function(e) {
+        sprite.width = this.width;
+        sprite.height = this.height;
+
+        context.drawImage(this, // this is image
+            sprite.left, sprite.top, sprite.width, sprite.height);
+      };
     } else {
       ctx.drawImage(this.image, sprite.left, sprite.top, sprite.width, sprite.height);
     }
@@ -752,3 +750,86 @@ Polygon.prototype.project = function (axis) {
                         Math.max.apply(Math, scalars));
 };
 // #endregion
+
+
+
+// 图像碰撞边框
+var ImageShape = function (imageSource, x, y, w, h) {
+  var self = this;
+
+  this.image = new Image();
+  this.imageLoaded = false;
+  this.points = [ new Point(x, y) ];
+  this.x = x;
+  this.y = y;
+
+  this.image.src = imageSource;
+  this.image.onload = function (e) {
+    self.setPolygonPoints();
+    self.imageLoaded = true;
+  };
+};
+
+ImageShape.prototype = new Polygon();
+
+ImageShape.prototype.fill = function (ctx) { };
+
+ImageShape.prototype.setPolygonPoints = function () {
+  this.points.push(new Point(this.x + this.image.width, this.y));
+  this.points.push(new Point(this.x + this.image.width, this.y + this.image.height));
+  this.points.push(new Point(this.x, this.y + this.image.height));
+};
+
+ImageShape.prototype.drawImage = function (ctx) {
+  ctx.drawImage(this.image, this.points[0].x, this.points[0].y);
+};
+
+ImageShape.prototype.stroke = function (ctx) {
+  var self = this;
+
+  if (this.imageLoaded) {
+    ctx.drawImage(this.image, this.points[0].x, this.points[0].y);
+  } else {
+    // this.image.onload = function (e) {
+    //   self.drawImage(ctx);
+    // };
+  }
+};
+
+// 精灵碰撞边框
+var SpriteShape = function (sprite, x, y) {
+  this.sprite = sprite;
+  this.x = x;
+  this.y = y;
+  sprite.left = x;
+  sprite.top = y;
+  this.setPolygonPoints();
+};
+
+SpriteShape.prototype = new Polygon();
+
+SpriteShape.prototype.fill = function (ctx) { };
+
+SpriteShape.prototype.move = function (dx, dy) {
+  var point;
+
+  for (var i = 0; i < this.points.length; ++i) {
+    point = this.points[i];
+    point.x += dx;
+    point.y += dy;
+  }
+
+  this.sprite.left = this.points[0].x;
+  this.sprite.top = this.points[0].y;
+};
+
+SpriteShape.prototype.setPolygonPoints = function () {
+  this.points.push(new Point(this.x, this.y));
+  this.points.push(new Point(this.x + this.sprite.width, this.y));
+  this.points.push(new Point(this.x + this.sprite.width, this.y + this.sprite.height));
+  this.points.push(new Point(this.x, this.y + this.sprite.height));
+};
+
+SpriteShape.prototype.stroke = function (ctx) {
+  this.sprite.paint(ctx);
+};
