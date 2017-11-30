@@ -423,7 +423,6 @@ Vector.prototype = {
     return v;
   },
 
-  // 得出2个点的连接向量
   subtract: function (vector) {
     var v = new Vector();
     v.x = this.x - vector.x;
@@ -431,7 +430,6 @@ Vector.prototype = {
     return v;
   },
 
-  // 点积，可得出向量在某个向量的投影长度
   dotProduct: function (vector) {
     return this.x * vector.x + this.y * vector.y;
   },
@@ -447,7 +445,6 @@ Vector.prototype = {
     return v;
   },
 
-  // 向量单位话
   normalize: function () {
     var v = new Vector(),
         m = this.getMagnitude();
@@ -475,139 +472,11 @@ var Projection = function (min, max) {
 Projection.prototype = {
   overlaps: function (projection) {
     return this.max > projection.min && this.min < projection.max;
-  },
-
-  getOverlap: function (projection) {
-     var overlap;
-
-     if (!this.overlaps(projection))
-        return 0;
-
-     if (this.max > projection.max) {
-        overlap = projection.max - this.min;
-     }
-     else {
-       overlap = this.max - projection.min;
-     }
-     return overlap;
   }
 };
 // #endregion
 
 // #region 形状
-
-// 常量.....................................................
-
-var BIG_NUMBER = 1000000;
-
-// 基类.....................................................
-
-var Point = function (x, y) {
-   this.x = x;
-   this.y = y;
-};
-
-var MinimumTranslationVector = function (axis, overlap) {
-   this.axis = axis;
-   this.overlap = overlap;
-};
-
-// 矩形外框
-var BoundingBox = function(left, top, width, height) {
-   this.left = left;
-   this.top = top;
-   this.width = width;
-   this.height = height;
-};
-
-// 方法类....................................................
-
-/**
- * [getPolygonPointClosestToCircle description]
- * @param  {[type]} polygon [description]
- * @param  {[type]} circle  [description]
- * @return {[type]}         [description]
- */
-function getPolygonPointClosestToCircle(polygon, circle) {
-  var min = 10000,
-      length,
-      testPoint,
-      closestPoint;
-
-  for (var i = 0; i < polygon.points.length; ++i) {
-    testPoint = polygon.points[i];
-    length = Math.sqrt(Math.pow(testPoint.x - circle.x, 2),
-                       Math.pow(testPoint.y - circle.y, 2));
-
-    if (length < min) {
-      min = length;
-      closestPoint = testPoint;
-    }
-  }
-
-  return closestPoint;
-}
-
-/**
- * 检测多边形和圆形的碰撞，并且返回最小单位向量
- * @param  {[type]} polygon [description]
- * @param  {[type]} circle  [description]
- * @param  {[type]} displacement [description]
- * @return {[type]}         [description]
- */
-function polygonCollidesWithCircle(polygon, circle, displacement) {
-  var closestPoint = getPolygonPointClosestToCircle(polygon, circle),
-      axes = polygon.getAxes(), v1, v2;
-    try {
-
-    v1 = new Vector(circle.x, circle.y);
-    v2 = new Vector(closestPoint.x, closestPoint.y);
-    } catch (e) {
-      debugger
-    } finally {
-
-    }
-
-  axes.push(v1.subtract(v2).normalize());
-
-  return polygon.minimumTranslationVector(axes, circle, displacement);
-}
-
-/**
- * 检测多边形和多边形的碰撞，并且返回最小单位向量
- * @param  {[type]} p1           [description]
- * @param  {[type]} p2           [description]
- * @param  {[type]} displacement [description]
- * @return {[type]}              [description]
- */
-function polygonCollidesWithPolygon(p1, p2, displacement) {
-  var mtv1 = p1.minimumTranslationVector(p1.getAxes(), p2, displacement),
-      mtv2 = p1.minimumTranslationVector(p2.getAxes(), p2, displacement);
-
-  if (mtv1.overlap === 0 || mtv2.overlap === 0)
-    return { axis: undefined, overlap: 0 };
-  else
-    return mtv1.overlap < mtv2.overlap ? mtv1 : mtv2;
-}
-
-/**
- * 检测圆形和圆形的碰撞，并且返回最小单位向量
- * @param  {[type]} c1 [description]
- * @param  {[type]} c2 [description]
- * @return {[type]}    [description]
- */
-function circleCollidesWithCircle (c1, c2) {
-   var distance = Math.sqrt( Math.pow(c2.x - c1.x, 2) +
-                             Math.pow(c2.y - c1.y, 2)),
-       overlap = Math.abs(c1.radius + c2.radius) - distance;
-
-   return overlap < 0 ?
-      new MinimumTranslationVector(undefined, 0) :
-      new MinimumTranslationVector(undefined, overlap);
-};
-
-// 对象类..............................................................
-
 var Shape = function () {
   this.x = null;
   this.y = null;
@@ -616,10 +485,6 @@ var Shape = function () {
 };
 
 Shape.prototype = {
-  boundingBox: function () {
-     throw 'boundingBox() not implemented';
-  },
-
   collidesWith: function (shape) {
      throw 'collidesWith(shape, displacement) not implemented';
   },
@@ -678,37 +543,9 @@ Shape.prototype = {
   isPointInPath: function (cxt, x, y) {
     this.createPath(cxt);
     return cxt.isPointInPath(x, y);
-  },
-
-  minimumTranslationVector: function (axes, shape, displacement) {
-    var minimumOverlap = BIG_NUMBER,
-        overlap,
-        axisWithSmallestOverlap,
-        mtv;
-
-    for (var i=0; i < axes.length; ++i) {
-      axis = axes[i];
-      projection1 = this.project(axis);
-      projection2 = shape.project(axis);
-      overlap = projection1.getOverlap(projection2);
-
-      if (overlap === 0) {
-         return new MinimumTranslationVector(undefined, 0);
-      }
-      else {
-         if (overlap < minimumOverlap) {
-            minimumOverlap = overlap;
-            axisWithSmallestOverlap = axis;
-         }
-      }
-    }
-    mtv = new MinimumTranslationVector(axisWithSmallestOverlap,
-                                     minimumOverlap);
-    return mtv;
   }
 };
 
-// #region 圆
 var Circle = function (x, y, radius, strokeStyle, fillStyle) {
   this.x = x;
   this.y = y;
@@ -719,11 +556,18 @@ var Circle = function (x, y, radius, strokeStyle, fillStyle) {
 
 Circle.prototype = new Shape();
 
-Circle.prototype.collidesWith = function (shape, displacement) {
-  if (shape.radius) {
-    return circleCollidesWithCircle(this, shape, displacement);
+Circle.prototype.collidesWith = function (shape) {
+  var point, length, min = 10000, v1, v2,
+      edge, perpendicular, normal,
+      axes = shape.getAxes(), distance;
+
+  if (!axes) {
+    distance = Math.sqrt(Math.pow(shape.x - this.x, 2) +
+                         Math.pow(shape.y - this.y, 2));
+
+    return distance < Math.abs(this.radius + shape.radius);
   } else {
-    return polygonCollidesWithCircle(shape, this, displacement);
+    return polygonCollidesWithCircle(shape, this);
   }
 };
 
@@ -749,21 +593,51 @@ Circle.prototype.project = function (axis) {
                         Math.max.apply(Math, scalars));
 };
 
-Circle.prototype.boundingBox = function (dx, dy) {
-   return new BoundingBox(this.x - this.radius,
-                          this.y - this.radius,
-                          2*this.radius,
-                          2*this.radius);
-};
-
 Circle.prototype.createPath = function (ctx) {
   ctx.beginPath();
   ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, false);
   ctx.closePath();
 };
+
+function getPolygonPointClosestToCircle(polygon, circle) {
+  var min = 10000,
+      length,
+      testPoint,
+      closestPoint;
+
+  for (var i = 0; i < polygon.points.length; ++i) {
+    testPoint = polygon.points[i];
+    length = Math.sqrt(Math.pow(testPoint.x - circle.x, 2),
+                       Math.pow(testPoint.y - circle.y, 2));
+
+    if (length < min) {
+      min = length;
+      closestPoint = testPoint;
+    }
+  }
+
+  return closestPoint;
+}
+
+function polygonCollidesWithCircle(polygon, circle) {
+  var closestPoint = getPolygonPointClosestToCircle(polygon, circle),
+      axes = polygon.getAxes(), v1, v2;
+
+  v1 = new Vector(circle.x, circle.y);
+  v2 = new Vector(closestPoint.x, closestPoint.y);
+
+  axes.push(v1.subtract(v2).normalize());
+
+  return !polygon.separationOnAxes(axes, circle);
+}
 // #endregion
 
-// #region 多边形
+// #region 多边形绘制
+var Point = function (x, y) {
+   this.x = x;
+   this.y = y;
+};
+
 var Polygon = function (centerX, centerY, radius, sides, startAngle, strokeStyle, fillStyle, filled) {
    this.x = centerX;
    this.y = centerY;
@@ -779,11 +653,14 @@ var Polygon = function (centerX, centerY, radius, sides, startAngle, strokeStyle
 Polygon.prototype = new Shape();
 
 // 兼容和圆形碰撞
-Polygon.prototype.collidesWith = function (shape, displacement) {
-  if (shape.radius) {
-    return polygonCollidesWithCircle(this, shape, displacement);
+Polygon.prototype.collidesWith = function (shape) {
+  var axes = shape.getAxes();
+
+  if (!axes) {
+    return polygonCollidesWithCircle(this, shape);
   } else {
-    return polygonCollidesWithPolygon(this, shape, displacement);
+    axes.concat(this.getAxes());
+    return !this.separationOnAxes(axes, shape);
   }
 };
 
@@ -829,25 +706,7 @@ Polygon.prototype.move = function (dx, dy) {
   }
 };
 
-Polygon.prototype.boundingBox = function (dx, dy) {
-   var minx = BIG_NUMBER,
-       miny = BIG_NUMBER,
-       maxx = -BIG_NUMBER,
-       maxy = -BIG_NUMBER,
-       point;
-
-   for (var i=0; i < this.points.length; ++i) {
-      point = this.points[i];
-      minx = Math.min(minx,point.x);
-      miny = Math.min(miny,point.y);
-      maxx = Math.max(maxx,point.x);
-      maxy = Math.max(maxy,point.y);
-   }
-
-   return new BoundingBox(minx, miny,
-                          parseFloat(maxx - minx),
-                          parseFloat(maxy - miny));
-};
+// 投影方法
 
 Polygon.prototype.getAxes = function () {
   var v1 = new Vector(),
@@ -875,7 +734,6 @@ Polygon.prototype.getAxes = function () {
   return axes;
 };
 
-// 投影方法
 Polygon.prototype.project = function (axis) {
   var scalars = [],
       v = new Vector();
@@ -889,8 +747,6 @@ Polygon.prototype.project = function (axis) {
   return new Projection(Math.min.apply(Math, scalars),
                         Math.max.apply(Math, scalars));
 };
-// #endregion
-
 // #endregion
 
 
