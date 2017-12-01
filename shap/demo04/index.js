@@ -144,7 +144,6 @@ function handleShapeCollisions() {
 
 // 检查碰撞，并且做处理
 function detectCollisions () {
-
   handleShapeCollisions(); // 物体碰撞检测
   handleEdgeCollisions(); // 边角碰撞检测
 }
