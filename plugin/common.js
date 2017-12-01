@@ -412,6 +412,7 @@ var Vector = function (x, y) {
   return this;
 };
 Vector.prototype = {
+  // 获取向量实际长度
   getMagnitude: function () {
     return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
   },
@@ -440,6 +441,7 @@ Vector.prototype = {
     return this.subtract(vector);
   },
 
+  // 垂线向量
   perpendicular: function (vector) {
     var v = new Vector();
     v.x = this.y;
@@ -558,15 +560,9 @@ function getPolygonPointClosestToCircle(polygon, circle) {
 function polygonCollidesWithCircle(polygon, circle, displacement) {
   var closestPoint = getPolygonPointClosestToCircle(polygon, circle),
       axes = polygon.getAxes(), v1, v2;
-    try {
 
-    v1 = new Vector(circle.x, circle.y);
-    v2 = new Vector(closestPoint.x, closestPoint.y);
-    } catch (e) {
-      debugger
-    } finally {
-
-    }
+  v1 = new Vector(circle.x, circle.y);
+  v2 = new Vector(closestPoint.x, closestPoint.y);
 
   axes.push(v1.subtract(v2).normalize());
 
@@ -727,6 +723,10 @@ Circle.prototype.collidesWith = function (shape, displacement) {
   }
 };
 
+Circle.prototype.centroid = function () {
+   return new Point(this.x,this.y);
+};
+
 Circle.prototype.getAxes = function () {
   return null; // 圆不存在边
 };
@@ -786,6 +786,18 @@ Polygon.prototype.collidesWith = function (shape, displacement) {
     return polygonCollidesWithPolygon(this, shape, displacement);
   }
 };
+
+Polygon.prototype.centroid = function () {
+   var pointSum = new Point(0,0);
+
+   for (var i=0, point; i < this.points.length; ++i) {
+      point = this.points[i];
+      pointSum.x += point.x;
+      pointSum.y += point.y;
+   }
+   return new Point(pointSum.x / this.points.length,
+                    pointSum.y / this.points.length);
+}
 
 Polygon.prototype.setPoints = function (points) {
   this.points = points;
