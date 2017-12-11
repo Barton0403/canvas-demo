@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <style media="screen">
+    body {
+      background: #eaeaea;
+      position: relative;
+    }
+
+    #canvas {
+      background: #fff;
+    }
+
+    #toast_load {
+      position: absolute;
+      left: 80px;
+      top: 150px;
+      width: 400px;
+      height: 500px;
+      background: #eaeaea;
+      padding: 20px;
+      display: none;
+    }
+
+    #btn_load {
+      display: block;
+      margin: 35px auto;
+    }
+
+    .title {
+      text-align: center;
+    }
+
+    #div_loadProgress {
+      display: none;
+      height: 45px;
+      margin: 35px auto;
+      text-align: center;
+    }
+
+    #toast_score {
+      position: absolute;
+      padding: 0 10px;
+      max-width: 250px;
+      overflow: hidden;
+      height: 35px;
+      line-height: 35px;
+      left: 10px;
+      top: 10px;
+      background: #eaeaea;
+    }
+
+    #canvas_lives {
+      width: 200px;
+      height: 35px;
+      background: #eaeaea;
+      position: absolute;
+      left: 390px;
+      top: 10px;
+    }
+
+    #toast_paused {
+      position: absolute;
+      width: 200px;
+      height: 100px;
+      left: 180px;
+      top: 150px;
+      background: #eaeaea;
+      padding: 20px;
+      display: none;
+    }
+
+    #toast_loseLife {
+      position: absolute;
+      top: 350px;
+      padding: 20px;
+      width: 200px;
+      /*background: #eaeaea;*/
+      left: 180px;
+      text-align: center;
+    }
+
+    #toast_gameOver {
+      position: absolute;
+      left: 80px;
+      top: 150px;
+      width: 400px;
+      height: 500px;
+      background: #eaeaea;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    #highScore {
+      color: red;
+      font-size: 48px;
+      text-align: center;
+    }
+
+    #list_historyScore {
+      height: 210px;
+      overflow: auto;
+      background: #fff;
+    }
+
+    ol {
+      margin: 0;
+    }
+
+    #toast_historyScore {
+      display: none;
+    }
+  </style>
+
+</head>
+<body>
+  <canvas id="canvas" width="600" height="800">
+    浏览器版本过低，建议使用最新的谷歌浏览器或火狐浏览器
+  </canvas>
+
+  <!-- 加载页面 -->
+  <div id="toast_load">
+    <h3 class="title">不是游戏的游戏</h3>
+    <p>这是一个不是游戏的游戏。</p>
+    <p>游戏功能：</p>
+    <ul>
+      <li>资料加载动画</li>
+      <li>游戏资源管理</li>
+      <li>声音播放</li>
+      <li>具有视差效果的滚动背景</li>
+      <li>生命数量显示</li>
+      <li>高分榜</li>
+      <li>按键处理</li>
+      <li>暂停功能与自动暂停机制</li>
+      <li>对游戏结束的流程处理</li>
+    </ul>
+    <button id="btn_load">加载游戏</button>
+
+    <div id="div_loadProgress"></div>
+  </div>
+
+  <!-- 分数 -->
+  <div id="toast_score">0</div>
+
+  <!-- 血条 -->
+  <canvas id="canvas_lives"></canvas>
+
+  <!-- 暂停界面 -->
+  <div id="toast_paused">
+    <h3 class="title">暂停</h3>
+    <p style="text-align: center;">点击任意地方开始</p>
+  </div>
+
+  <!-- 减少生命 -->
+  <div id="toast_loseLife">
+    <button id="btn_loseLife">扣血</button>
+  </div>
+
+  <!-- 游戏结束 -->
+  <div id="toast_gameOver">
+    <h1 id="highScore">200</h1>
+    <p>你的姓名：</p>
+    <input type="text" id="input_playerName">
+    <button>添加记录</button>
+    <button>新游戏</button>
+
+    <div id="toast_historyScore">
+      <h3>游戏记录</h3>
+      <div id="list_historyScore">
+        <ol></ol>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../plugin/roundedRectangle.js"></script>
+  <script src="./progressbar.js"></script>
+  <script src="./main.js"></script>
+  <script src="http://localhost:35729/livereload.js"></script>
+</body>
+</html>
