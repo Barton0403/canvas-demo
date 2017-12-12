@@ -12,8 +12,8 @@
       position: relative;
     }
 
-    #canvas {
-      background: #fff;
+    #canvas_game {
+      background: #6e96d1;
     }
 
     #toast_load {
@@ -24,7 +24,7 @@
       height: 500px;
       background: #eaeaea;
       padding: 20px;
-      display: none;
+      /*display: none;*/
     }
 
     #btn_load {
@@ -53,15 +53,15 @@
       left: 10px;
       top: 10px;
       background: #eaeaea;
+      display: none;
     }
 
     #canvas_lives {
-      width: 200px;
-      height: 35px;
       background: #eaeaea;
       position: absolute;
-      left: 390px;
+      left: 490px;
       top: 10px;
+      display: none;
     }
 
     #toast_paused {
@@ -83,6 +83,7 @@
       /*background: #eaeaea;*/
       left: 180px;
       text-align: center;
+      display: none;
     }
 
     #toast_gameOver {
@@ -94,9 +95,10 @@
       background: #eaeaea;
       padding: 20px;
       overflow: hidden;
+      display: none;
     }
 
-    #highScore {
+    #txt_highScore {
       color: red;
       font-size: 48px;
       text-align: center;
@@ -119,7 +121,7 @@
 
 </head>
 <body>
-  <canvas id="canvas" width="600" height="800">
+  <canvas id="canvas_game" width="600" height="800">
     浏览器版本过低，建议使用最新的谷歌浏览器或火狐浏览器
   </canvas>
 
@@ -148,7 +150,7 @@
   <div id="toast_score">0</div>
 
   <!-- 血条 -->
-  <canvas id="canvas_lives"></canvas>
+  <canvas id="canvas_lives" width="100px" height="36px"></canvas>
 
   <!-- 暂停界面 -->
   <div id="toast_paused">
@@ -163,7 +165,7 @@
 
   <!-- 游戏结束 -->
   <div id="toast_gameOver">
-    <h1 id="highScore">200</h1>
+    <h1 id="txt_highScore">200</h1>
     <p>你的姓名：</p>
     <input type="text" id="input_playerName">
     <button>添加记录</button>
@@ -177,6 +179,19 @@
     </div>
   </div>
 
+  <!-- 音频 -->
+  <audio id="audio_pop" preload='auto'>
+     <source src='./sounds/pop.ogg' type='audio/ogg'>
+     <source src='./sounds/pop.mp3' type='audio/mp3'>
+  </audio>
+
+  <audio id="audio_whoosh" preload='auto'>
+     <source src='./sounds/whoosh.ogg' type='audio/ogg'>
+     <source src='./sounds/whoosh.mp3' type='audio/mp3'>
+  </audio>
+
+  <script src="../../plugin/requestNextAnimationFrame.js"></script>
+  <script src="../../plugin/gameEngine.js"></script>
   <script src="../../plugin/roundedRectangle.js"></script>
   <script src="./progressbar.js"></script>
   <script src="./main.js"></script>
