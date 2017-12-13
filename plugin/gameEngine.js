@@ -4,7 +4,7 @@
  *
  * License:
  *
- * Permission is hereby granted, free of charge, to any person 
+ * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
  * (the "Software"), to deal in the Software without restriction,
  * including without limitation the rights to use, copy, modify, merge,
@@ -63,7 +63,7 @@ var Game = function (gameName, canvasId) {
        self = this; // Used by key event handlers below
 
    // General
-   
+
    this.context = canvas.getContext('2d');
    this.gameName = gameName;
    this.sprites = [];
@@ -74,7 +74,7 @@ var Game = function (gameName, canvasId) {
    this.HIGH_SCORES_SUFFIX = '_highscores';
 
    // Image loading
-   
+
    this.imageLoadingProgressCallback;
    this.images = {};
    this.imageUrls = [];
@@ -83,7 +83,7 @@ var Game = function (gameName, canvasId) {
    this.imagesIndex = 0;
 
    // Time
-   
+
    this.startTime = 0;
    this.lastTime = 0;
    this.gameTime = 0;
@@ -120,18 +120,18 @@ var Game = function (gameName, canvasId) {
 
 Game.prototype = {
    // Given a URL, return the associated image
-   
+
    getImage: function (imageUrl) {
       return this.images[imageUrl];
    },
-   
+
    // This method is called by loadImage() when
    // an image loads successfully.
 
    imageLoadedCallback: function (e) {
       this.imagesLoaded++;
    },
-   
+
    // This method is called by loadImage() when
    // an image does not load successfully.
 
@@ -140,7 +140,7 @@ Game.prototype = {
    },
 
    // Loads a particular image
-   
+
    loadImage: function (imageUrl) {
       var image = new Image(),
           self = this; // load and error event handlers called by DOMWindow
@@ -149,7 +149,7 @@ Game.prototype = {
 
       image.addEventListener('load',
          function (e) {
-            self.imageLoadedCallback(e); 
+            self.imageLoadedCallback(e);
          });
 
       image.addEventListener('error',
@@ -165,7 +165,7 @@ Game.prototype = {
    // percent of the games images that have been processed. When
    // the method returns 100, all images are loaded, and you can
    // quit calling this method.
-   
+
    loadImages: function () {
 
       // If there are images left to load
@@ -183,11 +183,11 @@ Game.prototype = {
 
    // Call this method to add an image to the queue. The image
    // will be loaded by loadImages().
-   
+
    queueImage: function (imageUrl) {
       this.imageUrls.push(imageUrl);
    },
-   
+
    // Game loop..................................................................
 
    // Starts the animation by invoking window.requestNextAnimationFrame().
@@ -204,7 +204,7 @@ Game.prototype = {
    // the this variable to be the game instead, so we use JavaScript's built-in
    // call() function to call the function, with the game specified as the
    // this variable.
-   
+
    start: function () {
       var self = this;               // The this variable is the game
       this.startTime = getTimeNow(); // Record game's startTime (used for pausing)
@@ -213,7 +213,7 @@ Game.prototype = {
          function (time) {
             // The this variable in this function is the window, not the game,
             // which is why we do not simply do this: animate.call(time).
-            
+
             self.animate.call(self, time); // self is the game
          });
    },
@@ -234,11 +234,11 @@ Game.prototype = {
 
    animate: function (time) {
       var self = this; // window.requestNextAnimationFrame() called by DOMWindow
-      
+
       if (this.paused) {
          // In PAUSE_TIMEOUT (100) ms, call this method again to see if the game
          // is still paused. There's no need to check more frequently.
-         
+
          setTimeout( function () {
             window.requestNextAnimationFrame(
                function (time) {
@@ -272,7 +272,7 @@ Game.prototype = {
 
    // Update the frame rate, game time, and the last time the application
    // drew an animation frame.
-   
+
    tick: function (time) {
       this.updateFrameRate(time);
       this.gameTime = (getTimeNow()) - this.startTime;
@@ -280,14 +280,14 @@ Game.prototype = {
 
    // Update the frame rate, based on the amount of time it took
    // for the last animation frame only.
-   
+
    updateFrameRate: function (time) {
       if (this.lastTime === 0) this.fps = this.STARTING_FPS;
       else                     this.fps = 1000 / (time - this.lastTime);
    },
 
    // Clear the entire canvas.
-   
+
    clearScreen: function () {
       this.context.clearRect(0, 0,
          this.context.canvas.width, this.context.canvas.height);
@@ -304,7 +304,7 @@ Game.prototype = {
    },
 
    // Paint all visible sprites.
-   
+
    paintSprites: function (time) {
       for(var i=0; i < this.sprites.length; ++i) {
          var sprite = this.sprites[i];
@@ -339,7 +339,7 @@ Game.prototype = {
 
    // Given a velocity of some object, calculate the number of pixels to
    // move that object for the current frame.
-   
+
    pixelsPerFrame: function (time, velocity) {
       // Sprites move a certain amount of pixels per frame (pixels/frame).
       // This methods returns the amount of pixels a sprite should move
@@ -352,7 +352,7 @@ Game.prototype = {
    // High scores................................................................
 
    // Returns an array of high scores from local storage.
-   
+
    getHighScores: function () {
       var key = this.gameName + this.HIGH_SCORES_SUFFIX,
           highScoresString = localStorage[key];
@@ -368,7 +368,7 @@ Game.prototype = {
    setHighScore: function (highScore) {
       var key = this.gameName + this.HIGH_SCORES_SUFFIX,
           highScoresString = localStorage[key];
-      
+
       highScores.unshift(highScore);
       localStorage[key] = JSON.stringify(highScores);
    },
@@ -382,16 +382,16 @@ Game.prototype = {
    // Key listeners..............................................................
 
    // Add a (key, listener) pair to the keyListeners array.
-   
+
    addKeyListener: function (keyAndListener) {
       this.keyListeners.push(keyAndListener);
    },
-   
+
    // Given a key, return the associated listener.
 
    findKeyListener: function (key) {
       var listener = undefined;
-      
+
       for(var i=0; i < this.keyListeners.length; ++i) {
          var keyAndListener = this.keyListeners[i],
              currentKey = keyAndListener.key;
@@ -404,7 +404,7 @@ Game.prototype = {
 
    // This method is the call back for key down and key press
    // events.
-   
+
    keyPressed: function (e) {
       var listener = undefined,
           key = undefined;
@@ -447,7 +447,7 @@ Game.prototype = {
 
    getAvailableSoundChannel: function () {
       var audio;
-      
+
       for (var i=0; i < this.NUM_SOUND_CHANNELS; ++i) {
          audio = this.soundChannels[i];
 
@@ -459,7 +459,7 @@ Game.prototype = {
    },
 
    // Given an identifier, play the associated sound.
-   
+
    playSound: function (id) {
       var channel = this.getAvailableSoundChannel(),
           element = document.getElementById(id);
@@ -471,26 +471,26 @@ Game.prototype = {
       }
    },
 
-   
+
    // Sprites....................................................................
 
    // Add a sprite to the game. The game engine will update the sprite and
    // paint it (if it's visible) in the animate() method.
-   
+
    addSprite: function (sprite) {
       this.sprites.push(sprite);
    },
-   
+
    // It's probably a good idea not to access sprites directly, because
    // it's better to write generalized code that deals with all
    // sprites, so this method should be used sparingly.
-   
-   getSprite: function (name) { 
+
+   getSprite: function (name) {
       for(i in this.sprites) {
          if (this.sprites[i].name === name)
             return this.sprites[i];
       }
-      return null;      
+      return null;
    },
 
    // Override the following methods as desired:

@@ -1,5 +1,6 @@
 var game = new Game('ungame', 'canvas_game'),
-  gameOver = false;
+  gameOver = false,
+  highScores = [],
 
   // 加载................................................
   loading = true,
@@ -20,9 +21,15 @@ var game = new Game('ungame', 'canvas_game'),
   // 分数.............................................
   toast_score = document.getElementById('toast_score'),
   score = 0,
+  lastScore = 0,
 
   // 分数结果...........................................
   txt_highScore = document.getElementById('txt_highScore'),
+  input_playerName = document.getElementById('input_playerName'),
+  btn_addRecord = document.getElementById('btn_addRecord'),
+  btn_newGame = document.getElementById('btn_newGame'),
+  list_historyScore = document.getElementById('list_historyScore'),
+  input_clearHistoryScores = document.getElementById('input_clearHistoryScores'),
 
   // 背景滚动...........................................
 
@@ -102,54 +109,79 @@ var game = new Game('ungame', 'canvas_game'),
      context.stroke();
      context.fill();
      context.restore();
-  };
+  },
 
 // 更新分数显示..............................................
 
-var updateScore = function () {
-   if ( !loading && game.lastScoreUpdate !== undefined) { // 判断是否加载完毕，并且非第一次更新分数
-      if (game.gameTime - game.lastScoreUpdate > 1000) { // 判断是否经过1秒了
-         toast_score.style.display = 'block';
-         score += 10;
-         toast_score.innerHTML = score.toFixed(0);
-         game.playSound('audio_pop');
-         game.lastScoreUpdate = game.gameTime;
-      }
-   }
-   else {
-      game.lastScoreUpdate = game.gameTime;
-   }
-};
+  updateScore = function () {
+     if ( !loading && game.lastScoreUpdate !== undefined) { // 判断是否加载完毕，并且非第一次更新分数
+        if (game.gameTime - game.lastScoreUpdate > 1000) { // 判断是否经过1秒了
+           toast_score.style.display = 'block';
+           score += 10;
+           toast_score.innerHTML = score.toFixed(0);
+           game.playSound('audio_pop');
+           game.lastScoreUpdate = game.gameTime;
+        }
+     }
+     else {
+        game.lastScoreUpdate = game.gameTime;
+     }
+  },
 
 // 更新血条显示...............................................
 
-var updateLivesDisplay = function (e) {
-  var x, y, RADIUS = 10;
+  updateLivesDisplay = function (e) {
+    var x, y, RADIUS = 10;
 
-  context_lives.fillStyle = '#d92354';
-  context_lives.clearRect(0,0,canvas_lives.width,canvas_lives.height);
+    context_lives.fillStyle = '#d92354';
+    context_lives.clearRect(0,0,canvas_lives.width,canvas_lives.height);
 
-  for (var i = 0; i < livesLeft; i++) {
-    x = 20 + 30 * i;
-    y = 18;
+    for (var i = 0; i < livesLeft; i++) {
+      x = 20 + 30 * i;
+      y = 18;
 
-    context_lives.beginPath();
-    context_lives.arc(x, y, RADIUS, 0, 2 * Math.PI);
-    context_lives.fill();
-  }
-};
+      context_lives.beginPath();
+      context_lives.arc(x, y, RADIUS, 0, 2 * Math.PI);
+      context_lives.fill();
+    }
+  },
 
 // 游戏结束..................................................
-var over = function () {
-  gameOver = true;
-  toast_loseLife.style.display = 'none';
-  canvas_lives.style.display = 'none';
-  toast_score.style.display = 'none';
+  over = function () {
+    gameOver = true;
+    toast_loseLife.style.display = 'none';
+    canvas_lives.style.display = 'none';
+    toast_score.style.display = 'none';
 
-  txt_highScore.innerHTML = score;
+    toast_score.innerHTML = '0';
+    txt_highScore.innerHTML = score;
+    lastScore = score;
+    score = 0;
 
-  toast_gameOver.style.display = 'block';
-};
+    updateHighScoreList();
+
+    toast_gameOver.style.display = 'block';
+    input_playerName.focus();
+  },
+
+  // 更新分数排行榜
+
+  updateHighScoreList = function () {
+    highScores = game.getHighScores(),
+      listStr = '';
+
+    if (highScores.length === 0) {
+      toast_historyScore.style.display = 'none';
+    } else {
+      // 添加列表DOM
+      for (var i = 0; i < highScores.length; i++) {
+        listStr += '<li>' + highScores[i].name + ' ' + highScores[i].score + '</li>';
+      }
+      list_historyScore.innerHTML = '<ol>' + listStr + '</ol>';
+
+      toast_historyScore.style.display = 'block';
+    }
+  };
 
 // 加载按钮.................................................
 
@@ -209,10 +241,66 @@ btn_load.onclick = function (e) {
 btn_loseLife.onclick = function (e) {
   livesLeft--;
 
-  if (livesLeft == 0) toast_loseLife.style.display = none;
+  if (livesLeft == 0) toast_loseLife.style.display = 'none';
 
   game.playSound('audio_whoosh');
 };
+
+// 新游戏按钮................................................
+
+btn_newGame.onclick = function (e) {
+  livesLeft = 3;
+  game.lastScoreUpdate = undefined;
+  if (input_clearHistoryScores.checked)
+    game.clearHighScores();
+  gameOver= false;
+
+  toast_score.style.display = 'block';
+  toast_loseLife.style.display = 'block';
+  canvas_lives.style.display = 'block';
+
+  toast_gameOver.style.display = 'none';
+  btn_addRecord.disabled = false;
+  input_playerName.value = '';
+};
+
+// 添加游戏记录...........................................
+
+btn_addRecord.onclick = function (e) {
+  var playerName;
+
+  playerName = input_playerName.value.replace(/(^\s*)|(\s*$)/g, "");
+  game.setHighScore({ name: playerName, score: lastScore });
+  updateHighScoreList();
+  btn_addRecord.disabled = 'true';
+  input_playerName.value = '';
+};
+
+// 游戏暂停..................................................
+
+var togglePaused = function () {
+   game.togglePaused();
+   toast_paused.style.display = game.paused ? 'block' : 'none';
+};
+
+window.onblur = function (e) {
+  if (!loading && !gameOver && !game.paused)
+    togglePaused();
+};
+
+window.onfocus = function (e) {
+  if (game.paused)
+    togglePaused();
+};
+
+// 游戏按钮监听
+
+game.addKeyListener({
+  key: 'p',
+  listener: function () {
+    game.togglePaused();
+  }
+});
 
 // 游戏周期..................................................
 
